@@ -1,0 +1,81 @@
+import ReactECharts from "echarts-for-react";
+import { ChartPanel } from "../ChartPanel";
+
+type LagHistogramChartProps = {
+  data: Array<[number, number]>;
+  selectedLag: number | null;
+  onLagSelect: (lag: number | null) => void;
+};
+
+export function LagHistogramChart({
+  data,
+  selectedLag,
+  onLagSelect,
+}: LagHistogramChartProps) {
+  const option = {
+    tooltip: {
+      trigger: "axis",
+    },
+    grid: {
+      left: 56,
+      right: 28,
+      top: 28,
+      bottom: 84,
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      name: "Lag in years",
+      nameLocation: "middle",
+      nameGap: 56,
+      axisLabel: {
+        interval: 0,
+        rotate: 30,
+        hideOverlap: true,
+        margin: 16,
+      },
+      data: data.map(([lag]) => lag),
+    },
+    yAxis: {
+      type: "value",
+      name: "Count",
+      nameLocation: "middle",
+      nameGap: 48,
+      nameRotate: 90,
+      axisLabel: {
+        margin: 12,
+      },
+    },
+    series: [
+      {
+        type: "bar",
+        data: data.map(([, count]) => count),
+        itemStyle: {
+          color: (params: { dataIndex: number }) => {
+            const lag = data[params.dataIndex]?.[0];
+            return lag === selectedLag ? "#ef476f" : "#1677ff";
+          },
+        },
+      },
+    ],
+  };
+
+  const onEvents = {
+    click: (params: { dataIndex?: number }) => {
+      const lag = data[params.dataIndex ?? -1]?.[0] ?? null;
+      if (lag === null) {
+        return;
+      }
+      onLagSelect(lag === selectedLag ? null : lag);
+    },
+  };
+
+  return (
+    <ChartPanel
+      title="Completion Lag"
+      subtitle="How many years usually pass between release and your completion date. Click a bar to list matching anime."
+    >
+      <ReactECharts option={option} onEvents={onEvents} style={{ height: 380 }} />
+    </ChartPanel>
+  );
+}

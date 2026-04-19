@@ -1,0 +1,8 @@
+.DS_Store
+.venv/
+
+anime-heatmap/node_modules/
+anime-heatmap/dist/
+
+migration/.venv/
+migration/runtime/

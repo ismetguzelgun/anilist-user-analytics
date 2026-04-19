@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light;
+  font-family:
+    "IBM Plex Sans",
+    "Helvetica Neue",
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background: #d9e0e8;
+  color: #152033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #d9e0e8;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+}
+
+.hero {
+  padding: 24px 28px;
+  background: #edf2f7 !important;
+  border: 1px solid #bcc7d3 !important;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  color: #586879;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 6vw, 4.6rem);
+  line-height: 0.95;
+}
+
+.panel {
+  background: #eef3f7 !important;
+  border: 1px solid #c2ccd7 !important;
+}
+
+.stat-card {
+  background: #e7edf3 !important;
+  border: 1px solid #bcc7d3 !important;
+}
+
+.studio-list-panel {
+}
+
+.studio-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.studio-list-item {
+  background: #e2e9f0 !important;
+  border: 1px solid #bcc7d3 !important;
+}
+
+.result-link {
+  color: #2457a2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.result-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 960px) {
+  .app-shell {
+    padding: 20px 14px 40px;
+  }
+}
