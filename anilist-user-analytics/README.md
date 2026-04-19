@@ -5,7 +5,7 @@ Local AniList visualization app for `kneestronk`.
 ## Run
 
 ```bash
-cd /Users/guzelgun/CrawlProjects/malexportus/anime-heatmap
+cd /Users/guzelgun/CrawlProjects/malexportus/anilist-user-analytics
 npm install
 npm run dev
 ```
