@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActionIcon,
   Alert,
-  Box,
   Container,
   Group,
+  Pagination,
   Paper,
   ScrollArea,
   SegmentedControl,
+  Select,
   Stack,
   Table,
   TextInput,
@@ -19,6 +20,7 @@ import { FiltersPanel } from "./components/FiltersPanel";
 import { StatsGrid } from "./components/StatsGrid";
 import { HeatmapChart } from "./components/charts/HeatmapChart";
 import { LagHistogramChart } from "./components/charts/LagHistogramChart";
+import { GenreBarChart } from "./components/charts/GenreBarChart";
 import { StudioBarChart } from "./components/charts/StudioBarChart";
 import { YearBarChart } from "./components/charts/YearBarChart";
 import {
@@ -26,6 +28,7 @@ import {
   averageScore,
   buildHeatmap,
   buildLagHistogram,
+  countByGenre,
   countByYear,
   countByStudio,
   deriveEntries,
@@ -51,6 +54,7 @@ const chartOptions = [
   { key: "heatmap", label: "Heatmap" },
   { key: "releaseYear", label: "By Release Year" },
   { key: "completedYear", label: "By Completion Year" },
+  { key: "genre", label: "By Genre" },
   { key: "studio", label: "By Studio" },
   { key: "lag", label: "Completion Lag" },
 ] as const;
@@ -80,6 +84,13 @@ type SelectionState =
       entries: DerivedAnimeEntry[];
     }
   | {
+      kind: "genre";
+      key: string;
+      title: string;
+      description: string;
+      entries: DerivedAnimeEntry[];
+    }
+  | {
       kind: "studio";
       key: string;
       title: string;
@@ -95,7 +106,13 @@ type SelectionState =
     }
   | null;
 
-type TableSortKey = "title" | "score" | "releaseYear" | "completedYear" | "format";
+type TableSortKey =
+  | "title"
+  | "score"
+  | "releaseYear"
+  | "completedYear"
+  | "format"
+  | "genres";
 type TableSortDirection = "asc" | "desc";
 
 function sortSelectedEntries(entries: DerivedAnimeEntry[]): DerivedAnimeEntry[] {
@@ -129,6 +146,8 @@ export default function App() {
     key: "score",
     direction: "desc",
   });
+  const [tablePage, setTablePage] = useState(1);
+  const [tablePageSize, setTablePageSize] = useState("25");
 
   useEffect(() => {
     let cancelled = false;
@@ -182,6 +201,7 @@ export default function App() {
     () => countByStudio(filtered, { minScore: appliedFilters.minScore, limit: 15 }),
     [filtered, appliedFilters.minScore],
   );
+  const genreCounts = useMemo(() => countByGenre(filtered, { limit: 15 }), [filtered]);
 
   useEffect(() => {
     setSelection(null);
@@ -197,11 +217,17 @@ export default function App() {
       key: "score",
       direction: "desc",
     });
+    setTablePage(1);
   }, [selection]);
+
+  useEffect(() => {
+    setTablePage(1);
+  }, [tableQuery, tablePageSize]);
 
   const selectedHeatmapKey = selection?.kind === "heatmap" ? selection.key : null;
   const selectedReleaseYear = selection?.kind === "releaseYear" ? selection.key : null;
   const selectedCompletedYear = selection?.kind === "completedYear" ? selection.key : null;
+  const selectedGenre = selection?.kind === "genre" ? selection.key : null;
   const selectedStudio = selection?.kind === "studio" ? selection.key : null;
   const selectedLag = selection?.kind === "lag" ? selection.key : null;
 
@@ -230,6 +256,8 @@ export default function App() {
           return ((a.completedYear ?? -Infinity) - (b.completedYear ?? -Infinity)) * direction;
         case "format":
           return a.format.localeCompare(b.format) * direction;
+        case "genres":
+          return a.genres.join(", ").localeCompare(b.genres.join(", ")) * direction;
         default:
           return 0;
       }
@@ -237,6 +265,16 @@ export default function App() {
 
     return sorted;
   }, [selection, tableQuery, tableSort]);
+
+  const totalTablePages = Math.max(
+    1,
+    Math.ceil(visibleSelectionEntries.length / Number(tablePageSize)),
+  );
+
+  const pagedSelectionEntries = useMemo(() => {
+    const startIndex = (tablePage - 1) * Number(tablePageSize);
+    return visibleSelectionEntries.slice(startIndex, startIndex + Number(tablePageSize));
+  }, [tablePage, tablePageSize, visibleSelectionEntries]);
 
   function stepChart(direction: -1 | 1) {
     const nextIndex =
@@ -273,221 +311,261 @@ export default function App() {
   }
 
   return (
-    <Container size="xl" py="xl">
-      <Paper radius="xl" p="xl" shadow="sm" className="hero">
-        <Stack gap="xs">
-          <Text className="eyebrow">AniList watch analytics</Text>
-          <Title order={1}>Anime Heatmap</Title>
-          <Text c="dimmed" maw={720}>
-            Public AniList analytics with explicit refresh. Draft filter changes stay local
+    <Container size="xl" className="app-shell">
+      <Paper radius="xl" p="lg" shadow="sm" className="header-strip">
+        <Group justify="space-between" align="end" gap="xl" wrap="wrap">
+          <Group gap="md" align="center" wrap="nowrap" className="brand-block">
+            <div className="anilist-logo" aria-hidden="true">
+              <svg viewBox="0 0 64 64" role="img">
+                <rect x="6" y="6" width="52" height="52" rx="12" fill="#2457A2" />
+                <rect x="18" y="17" width="10" height="30" rx="5" fill="#FFFFFF" />
+                <circle cx="44" cy="24" r="7" fill="#FFFFFF" />
+                <rect x="34" y="33" width="16" height="10" rx="5" fill="#9BC2FF" />
+              </svg>
+            </div>
+            <Stack gap={4}>
+              <Text className="eyebrow">AniList user analytics</Text>
+              <Title order={1} className="page-title">
+                AniList User Analytics
+              </Title>
+            </Stack>
+          </Group>
+          <Text c="dimmed" maw={520} className="header-copy">
+            Public AniList analytics with explicit refresh. Draft control changes stay local
             until you press Refresh AniList.
           </Text>
-        </Stack>
-      </Paper>
-
-      <FiltersPanel
-        userName={draftUserName}
-        userNamePlaceholder={EXAMPLE_USER}
-        onUserNameChange={setDraftUserName}
-        onRefresh={applyCurrentControls}
-        loading={loading}
-        statuses={statuses}
-        formats={formats}
-        filters={draftFilters}
-        onFiltersChange={setDraftFilters}
-      />
-
-      {error ? (
-        <Alert color="red" radius="xl" mt="xl" title="AniList request failed">
-          {error}
-        </Alert>
-      ) : null}
-
-      <StatsGrid
-        totalEntries={entries.length}
-        filteredEntries={filtered.length}
-        averageScore={averageScore(filtered)}
-        medianLag={medianLag(filtered)}
-      />
-
-      <Paper radius="xl" p="lg" shadow="sm" mt="xl" className="panel">
-        <Group justify="space-between" align="center" mb="md" wrap="wrap">
-          <Stack gap={2}>
-            <Title order={2} size="h4">
-              Chart Stage
-            </Title>
-            <Text c="dimmed" size="sm">
-              One chart at a time. Switch views and click the chart to inspect matching anime.
-            </Text>
-          </Stack>
-          <Group gap="xs">
-            <ActionIcon
-              variant="light"
-              radius="md"
-              size="lg"
-              onClick={() => stepChart(-1)}
-              aria-label="Previous chart"
-            >
-              ‹
-            </ActionIcon>
-            <SegmentedControl
-              value={activeChart}
-              onChange={(value) => setActiveChart(value as ActiveChart)}
-              data={chartOptions.map((option) => ({
-                label: option.label,
-                value: option.key,
-              }))}
-            />
-            <ActionIcon
-              variant="light"
-              radius="md"
-              size="lg"
-              onClick={() => stepChart(1)}
-              aria-label="Next chart"
-            >
-              ›
-            </ActionIcon>
-          </Group>
         </Group>
-
-        {activeChart === "heatmap" ? (
-          <HeatmapChart
-            releaseYears={heatmap.releaseYears}
-            completedYears={heatmap.completedYears}
-            values={heatmap.values}
-            selectedKey={selectedHeatmapKey}
-            onSelect={(value) => {
-              if (value === null) {
-                setSelection(null);
-                return;
-              }
-              const entries = sortSelectedEntries(
-                filtered.filter(
-                  (entry) =>
-                    entry.releaseYear === value.releaseYear &&
-                    entry.completedYear === value.completedYear,
-                ),
-              );
-              setSelection({
-                kind: "heatmap",
-                key: `${value.releaseYear}:${value.completedYear}`,
-                title: `Released ${value.releaseYear}, completed ${value.completedYear}`,
-                description: "Entries selected from the heatmap.",
-                entries,
-              });
-            }}
-          />
-        ) : null}
-
-        {activeChart === "releaseYear" ? (
-          <YearBarChart
-            title="Scores by Release Year"
-            subtitle={`How many anime match the current applied filter, grouped by release year. Min score is ${appliedFilters.minScore}. Click a bar to list titles.`}
-            data={highScoreByReleaseYear}
-            xLabel="Release year"
-            selectedYear={selectedReleaseYear}
-            onYearSelect={(year) => {
-              if (year === null) {
-                setSelection(null);
-                return;
-              }
-              const entries = sortSelectedEntries(
-                filtered.filter((entry) => entry.releaseYear === year),
-              );
-              setSelection({
-                kind: "releaseYear",
-                key: year,
-                title: `Filtered entries released in ${year}`,
-                description: "Entries selected from the release year chart.",
-                entries,
-              });
-            }}
-          />
-        ) : null}
-
-        {activeChart === "completedYear" ? (
-          <YearBarChart
-            title="Scores by Completion Year"
-            subtitle={`How many anime match the current applied filter, grouped by completion year. Min score is ${appliedFilters.minScore}. Click a bar to list titles.`}
-            data={highScoreByCompletedYear}
-            xLabel="Completed year"
-            color="#ff8c42"
-            selectedYear={selectedCompletedYear}
-            onYearSelect={(year) => {
-              if (year === null) {
-                setSelection(null);
-                return;
-              }
-              const entries = sortSelectedEntries(
-                filtered.filter((entry) => entry.completedYear === year),
-              );
-              setSelection({
-                kind: "completedYear",
-                key: year,
-                title: `Filtered entries completed in ${year}`,
-                description: "Entries selected from the completion year chart.",
-                entries,
-              });
-            }}
-          />
-        ) : null}
-
-        {activeChart === "studio" ? (
-          <StudioBarChart
-            data={studioCounts}
-            selectedStudio={selectedStudio}
-            onStudioSelect={(studio) => {
-              if (studio === null) {
-                setSelection(null);
-                return;
-              }
-              const entries = sortSelectedEntries(
-                filtered.filter((entry) => entry.studios.includes(studio)),
-              );
-              setSelection({
-                kind: "studio",
-                key: studio,
-                title: studio,
-                description: "Entries selected from the studio chart.",
-                entries,
-              });
-            }}
-          />
-        ) : null}
-
-        {activeChart === "lag" ? (
-          <LagHistogramChart
-            data={lagHistogram}
-            selectedLag={selectedLag}
-            onLagSelect={(lag) => {
-              if (lag === null) {
-                setSelection(null);
-                return;
-              }
-              const entries = sortSelectedEntries(
-                filtered.filter((entry) => entry.lagYears === lag),
-              );
-              setSelection({
-                kind: "lag",
-                key: lag,
-                title: `${lag} year completion lag`,
-                description: "Entries selected from the lag histogram.",
-                entries,
-              });
-            }}
-          />
-        ) : null}
       </Paper>
+
+      <Stack gap="lg" mt="lg">
+        <FiltersPanel
+          userName={draftUserName}
+          userNamePlaceholder={EXAMPLE_USER}
+          onUserNameChange={setDraftUserName}
+          onRefresh={applyCurrentControls}
+          loading={loading}
+          statuses={statuses}
+          formats={formats}
+          filters={draftFilters}
+          onFiltersChange={setDraftFilters}
+        />
+
+        {error ? (
+          <Alert color="red" radius="md" title="AniList request failed" className="status-alert">
+            {error}
+          </Alert>
+        ) : null}
+
+        <Paper radius="xl" p="lg" shadow="sm" className="workspace">
+          <StatsGrid
+            totalEntries={entries.length}
+            filteredEntries={filtered.length}
+            averageScore={averageScore(filtered)}
+            medianLag={medianLag(filtered)}
+          />
+
+          <Paper radius="md" p="lg" shadow="sm" mt="lg" className="chart-stage">
+            <Group justify="space-between" align="center" mb="md" wrap="wrap">
+              <Stack gap={2}>
+                <Title order={2} size="h4">
+                  Chart Workspace
+                </Title>
+                <Text c="dimmed" size="sm">
+                  One chart at a time. Switch views and click the chart to inspect matching anime.
+                </Text>
+              </Stack>
+              <Group gap="xs" className="chart-switcher-wrap">
+                <ActionIcon
+                  variant="subtle"
+                  radius="md"
+                  size="lg"
+                  onClick={() => stepChart(-1)}
+                  aria-label="Previous chart"
+                >
+                  ‹
+                </ActionIcon>
+                <SegmentedControl
+                  value={activeChart}
+                  onChange={(value) => setActiveChart(value as ActiveChart)}
+                  data={chartOptions.map((option) => ({
+                    label: option.label,
+                    value: option.key,
+                  }))}
+                />
+                <ActionIcon
+                  variant="subtle"
+                  radius="md"
+                  size="lg"
+                  onClick={() => stepChart(1)}
+                  aria-label="Next chart"
+                >
+                  ›
+                </ActionIcon>
+              </Group>
+            </Group>
+
+            {activeChart === "heatmap" ? (
+              <HeatmapChart
+                releaseYears={heatmap.releaseYears}
+                completedYears={heatmap.completedYears}
+                values={heatmap.values}
+                selectedKey={selectedHeatmapKey}
+                onSelect={(value) => {
+                  if (value === null) {
+                    setSelection(null);
+                    return;
+                  }
+                  const entries = sortSelectedEntries(
+                    filtered.filter(
+                      (entry) =>
+                        entry.releaseYear === value.releaseYear &&
+                        entry.completedYear === value.completedYear,
+                    ),
+                  );
+                  setSelection({
+                    kind: "heatmap",
+                    key: `${value.releaseYear}:${value.completedYear}`,
+                    title: `Released ${value.releaseYear}, completed ${value.completedYear}`,
+                    description: "Entries selected from the heatmap.",
+                    entries,
+                  });
+                }}
+              />
+            ) : null}
+
+            {activeChart === "releaseYear" ? (
+              <YearBarChart
+                title="Scores by Release Year"
+                subtitle={`How many anime match the current applied filter, grouped by release year. Min score is ${appliedFilters.minScore}. Click a bar to list titles.`}
+                data={highScoreByReleaseYear}
+                xLabel="Release year"
+                selectedYear={selectedReleaseYear}
+                onYearSelect={(year) => {
+                  if (year === null) {
+                    setSelection(null);
+                    return;
+                  }
+                  const entries = sortSelectedEntries(
+                    filtered.filter((entry) => entry.releaseYear === year),
+                  );
+                  setSelection({
+                    kind: "releaseYear",
+                    key: year,
+                    title: `Filtered entries released in ${year}`,
+                    description: "Entries selected from the release year chart.",
+                    entries,
+                  });
+                }}
+              />
+            ) : null}
+
+            {activeChart === "completedYear" ? (
+              <YearBarChart
+                title="Scores by Completion Year"
+                subtitle={`How many anime match the current applied filter, grouped by completion year. Min score is ${appliedFilters.minScore}. Click a bar to list titles.`}
+                data={highScoreByCompletedYear}
+                xLabel="Completed year"
+                color="#ff8c42"
+                selectedYear={selectedCompletedYear}
+                onYearSelect={(year) => {
+                  if (year === null) {
+                    setSelection(null);
+                    return;
+                  }
+                  const entries = sortSelectedEntries(
+                    filtered.filter((entry) => entry.completedYear === year),
+                  );
+                  setSelection({
+                    kind: "completedYear",
+                    key: year,
+                    title: `Filtered entries completed in ${year}`,
+                    description: "Entries selected from the completion year chart.",
+                    entries,
+                  });
+                }}
+              />
+            ) : null}
+
+            {activeChart === "genre" ? (
+              <GenreBarChart
+                data={genreCounts}
+                selectedGenre={selectedGenre}
+                onGenreSelect={(genre) => {
+                  if (genre === null) {
+                    setSelection(null);
+                    return;
+                  }
+                  const entries = sortSelectedEntries(
+                    filtered.filter((entry) => entry.genres.includes(genre)),
+                  );
+                  setSelection({
+                    kind: "genre",
+                    key: genre,
+                    title: genre,
+                    description: "Entries selected from the genre chart.",
+                    entries,
+                  });
+                }}
+              />
+            ) : null}
+
+            {activeChart === "studio" ? (
+              <StudioBarChart
+                data={studioCounts}
+                selectedStudio={selectedStudio}
+                onStudioSelect={(studio) => {
+                  if (studio === null) {
+                    setSelection(null);
+                    return;
+                  }
+                  const entries = sortSelectedEntries(
+                    filtered.filter((entry) => entry.studios.includes(studio)),
+                  );
+                  setSelection({
+                    kind: "studio",
+                    key: studio,
+                    title: studio,
+                    description: "Entries selected from the studio chart.",
+                    entries,
+                  });
+                }}
+              />
+            ) : null}
+
+            {activeChart === "lag" ? (
+              <LagHistogramChart
+                data={lagHistogram}
+                selectedLag={selectedLag}
+                onLagSelect={(lag) => {
+                  if (lag === null) {
+                    setSelection(null);
+                    return;
+                  }
+                  const entries = sortSelectedEntries(
+                    filtered.filter((entry) => entry.lagYears === lag),
+                  );
+                  setSelection({
+                    kind: "lag",
+                    key: lag,
+                    title: `${lag} year completion lag`,
+                    description: "Entries selected from the lag histogram.",
+                    entries,
+                  });
+                }}
+              />
+            ) : null}
+          </Paper>
+        </Paper>
+      </Stack>
 
       {selection !== null ? (
-        <Paper radius="xl" p="lg" shadow="sm" mt="xl" className="panel studio-list-panel">
+        <Paper radius="xl" p="lg" shadow="sm" mt="xl" className="panel results-panel">
           <Stack gap={4} mb="md">
             <Title order={2} size="h4">
               {selection.title}
             </Title>
             <Text c="dimmed" size="sm">
-              {selection.entries.length} anime in the current filter, {visibleSelectionEntries.length} visible after table search. {selection.description}
-              {" "}Click the same chart item again to clear.
+              {selection.description} Click the same chart item again to clear.
             </Text>
           </Stack>
           <Group justify="space-between" align="end" mb="md" wrap="wrap">
@@ -498,9 +576,6 @@ export default function App() {
               onChange={(event) => setTableQuery(event.currentTarget.value)}
               w={320}
             />
-            <Text c="dimmed" size="sm">
-              Click a header to sort.
-            </Text>
           </Group>
           <ScrollArea h={420} offsetScrollbars scrollbarSize={10} type="auto">
             <Table
@@ -538,10 +613,13 @@ export default function App() {
                   <Table.Th onClick={() => toggleSort("format")} style={{ cursor: "pointer" }}>
                     {sortLabel("format", "Format")}
                   </Table.Th>
+                  <Table.Th onClick={() => toggleSort("genres")} style={{ cursor: "pointer" }}>
+                    {sortLabel("genres", "Genres")}
+                  </Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {visibleSelectionEntries.map((entry) => (
+                {pagedSelectionEntries.map((entry) => (
                   <Table.Tr key={`${selection.kind}-${selection.key}-${entry.mediaId}`}>
                     <Table.Td>
                       <a
@@ -558,11 +636,44 @@ export default function App() {
                     <Table.Td>{entry.releaseYear ?? "—"}</Table.Td>
                     <Table.Td>{entry.completedYear ?? "—"}</Table.Td>
                     <Table.Td>{entry.format}</Table.Td>
+                    <Table.Td>{entry.genres.join(", ") || "—"}</Table.Td>
                   </Table.Tr>
                 ))}
               </Table.Tbody>
             </Table>
           </ScrollArea>
+          <Group justify="flex-end" align="center" mt="md" wrap="wrap" gap="md">
+            <Group gap="xs" align="center" className="table-footer-rows">
+              <Text size="sm" fw={500}>
+                Rows
+              </Text>
+              <Select
+                value={tablePageSize}
+                onChange={(value) => setTablePageSize(value ?? "25")}
+                data={[
+                  { value: "25", label: "25" },
+                  { value: "50", label: "50" },
+                  { value: "100", label: "100" },
+                ]}
+                w={90}
+              />
+            </Group>
+            <Pagination
+              value={tablePage}
+              onChange={setTablePage}
+              total={totalTablePages}
+              radius="md"
+              size="sm"
+            />
+            <Text c="dimmed" size="sm">
+              {visibleSelectionEntries.length === 0
+                ? "0 results"
+                : `${(tablePage - 1) * Number(tablePageSize) + 1}–${Math.min(
+                    tablePage * Number(tablePageSize),
+                    visibleSelectionEntries.length,
+                  )} of ${visibleSelectionEntries.length}`}
+            </Text>
+          </Group>
         </Paper>
       ) : null}
     </Container>

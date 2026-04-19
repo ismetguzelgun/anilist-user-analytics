@@ -1,4 +1,4 @@
-# anime-heatmap
+# AniList User Analytics
 
 Local AniList visualization app for `kneestronk`.
 

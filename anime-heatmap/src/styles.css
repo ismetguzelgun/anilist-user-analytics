@@ -6,7 +6,7 @@
     sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  background: #d9e0e8;
+  background: #cfd7e2;
   color: #152033;
 }
 
@@ -17,7 +17,8 @@
 body {
   margin: 0;
   min-width: 320px;
-  background: #d9e0e8;
+  background:
+    linear-gradient(180deg, #d8dee8 0%, #cfd7e2 100%);
 }
 
 button,
@@ -30,57 +31,154 @@ button {
   cursor: pointer;
 }
 
+#root {
+  min-height: 100vh;
+}
+
 .app-shell {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 32px 20px 48px;
+  padding: 22px 20px 40px;
 }
 
-.hero {
-  padding: 24px 28px;
-  background: #edf2f7 !important;
-  border: 1px solid #bcc7d3 !important;
+.header-strip {
+  background: #e3e9f1 !important;
+  border: 1px solid #aeb9c7 !important;
+}
+
+.brand-block {
+  min-width: 0;
+}
+
+.anilist-logo {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+}
+
+.anilist-logo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .eyebrow {
-  margin: 0 0 8px;
+  margin: 0;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 0.78rem;
-  color: #586879;
+  font-size: 0.76rem;
+  color: #556374;
 }
 
-.hero h1 {
-  font-size: clamp(2.4rem, 6vw, 4.6rem);
+.page-title {
+  font-size: clamp(2rem, 4.6vw, 3.35rem) !important;
   line-height: 0.95;
+  margin: 0;
 }
 
-.panel {
-  background: #eef3f7 !important;
-  border: 1px solid #c2ccd7 !important;
+.header-copy {
+  font-size: 0.96rem;
+}
+
+.panel,
+.workspace {
+  background: #e8edf3 !important;
+  border: 1px solid #b4becb !important;
+}
+
+.filters-panel {
+  padding-top: 16px !important;
+}
+
+.filters-header {
+  padding-bottom: 12px;
+  margin-bottom: 14px !important;
+  border-bottom: 1px solid #c4ccd7;
+}
+
+.refresh-button {
+  min-width: 164px;
+}
+
+.status-alert {
+  border: 1px solid #e1b7bb;
+}
+
+.workspace {
+  padding: 14px !important;
+}
+
+.stats-strip {
+  margin-top: 0 !important;
 }
 
 .stat-card {
-  background: #e7edf3 !important;
-  border: 1px solid #bcc7d3 !important;
+  background: #dde4ec !important;
+  border: 1px solid #b5c0ce !important;
 }
 
-.studio-list-panel {
+.chart-stage {
+  background: #eef3f7 !important;
+  border: 1px solid #c3ccd7 !important;
 }
 
-.studio-list {
-  display: grid;
-  gap: 10px;
-  margin-top: 18px;
+.chart-switcher-wrap {
+  align-items: center;
 }
 
-.studio-list-item {
-  background: #e2e9f0 !important;
-  border: 1px solid #bcc7d3 !important;
+.chart-switcher-wrap .mantine-SegmentedControl-root {
+  background: #dde4ec;
+  border: 1px solid #bcc7d4;
+}
+
+.chart-switcher-wrap .mantine-SegmentedControl-indicator {
+  background: #f5f8fb;
+  box-shadow: none;
+}
+
+.chart-switcher-wrap .mantine-SegmentedControl-label {
+  color: #455465;
+  font-weight: 500;
+}
+
+.chart-switcher-wrap .mantine-SegmentedControl-labelActive {
+  color: #16253a;
+}
+
+.results-panel {
+  background: #e8edf3 !important;
+}
+
+.results-table {
+  background: #edf2f6;
+}
+
+.results-table thead th {
+  background: #d7dfe8;
+}
+
+.results-table tbody td {
+  background: #edf2f6;
+}
+
+.results-table tbody tr:nth-of-type(even) td {
+  background: #e5ebf1;
+}
+
+.table-footer-rows .mantine-Select-root {
+  margin: 0;
+}
+
+.table-footer-rows .mantine-InputWrapper-root {
+  margin: 0;
+}
+
+.table-footer-rows .mantine-InputWrapper-label {
+  display: none;
 }
 
 .result-link {
-  color: #2457a2;
+  color: #244f9f;
   text-decoration: none;
   font-weight: 500;
 }
@@ -91,6 +189,19 @@ button {
 
 @media (max-width: 960px) {
   .app-shell {
-    padding: 20px 14px 40px;
+    padding: 16px 14px 28px;
+  }
+
+  .header-strip {
+    padding: 16px !important;
+  }
+
+  .page-title {
+    font-size: clamp(1.8rem, 8vw, 2.8rem) !important;
+  }
+
+  .anilist-logo {
+    width: 44px;
+    height: 44px;
   }
 }

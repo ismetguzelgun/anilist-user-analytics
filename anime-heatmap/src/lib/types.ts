@@ -19,6 +19,7 @@ export type AnimeMedia = {
   episodes: number | null;
   format: string | null;
   seasonYear: number | null;
+  genres: string[];
   studios: {
     nodes: StudioNode[];
   };
@@ -53,6 +54,7 @@ export type DerivedAnimeEntry = {
   status: string;
   progress: number;
   format: string;
+  genres: string[];
   studios: string[];
   episodes: number | null;
   releaseYear: number | null;

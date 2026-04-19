@@ -1,6 +1,7 @@
 import {
   Button,
   Grid,
+  Group,
   NumberInput,
   Paper,
   Select,
@@ -39,16 +40,26 @@ export function FiltersPanel({
   }
 
   return (
-    <Paper radius="xl" p="lg" shadow="sm" mt="xl" className="panel filters-panel">
+    <Paper radius="xl" p="lg" shadow="sm" className="panel filters-panel">
+      <Group justify="space-between" align="end" mb="md" wrap="wrap" className="filters-header">
+        <Stack gap={2}>
+          <Title order={2} size="h4">
+            Controls
+          </Title>
+          <Text c="dimmed" size="sm">
+            Draft changes stay local until refresh.
+          </Text>
+        </Stack>
+      </Group>
       <Stack gap={4} mb="md">
-        <Title order={2} size="h4">
+        <Title order={3} size="h6">
           Filters
         </Title>
         <Text c="dimmed" size="sm">
           Public AniList profile query with local chart transforms.
         </Text>
       </Stack>
-      <Grid>
+      <Grid gutter="md">
         <Grid.Col span={{ base: 12, sm: 6, lg: 3 }}>
           <TextInput
             label="User name"
@@ -124,9 +135,11 @@ export function FiltersPanel({
           />
         </Grid.Col>
       </Grid>
-      <Button mt="md" radius="xl" onClick={onRefresh} loading={loading}>
-        Refresh AniList
-      </Button>
+      <Group justify="flex-end" mt="md">
+        <Button radius="md" onClick={onRefresh} loading={loading} className="refresh-button">
+          Refresh AniList
+        </Button>
+      </Group>
     </Paper>
   );
 }

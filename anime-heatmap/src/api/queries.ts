@@ -28,6 +28,7 @@ export const ANILIST_COLLECTION_QUERY = /* GraphQL */ `
             episodes
             format
             seasonYear
+            genres
             studios(isMain: true) {
               nodes {
                 name

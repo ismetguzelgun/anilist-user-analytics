@@ -14,6 +14,7 @@ export function deriveEntries(entries: AnimeListEntry[]): DerivedAnimeEntry[] {
     const completedYear = getYear(entry.completedAt);
     const startedYear = getYear(entry.startedAt);
     const studios = entry.media.studios.nodes.map((studio) => studio.name);
+    const genres = entry.media.genres ?? [];
     return {
       mediaId: entry.media.id,
       malId: entry.media.idMal,
@@ -22,6 +23,7 @@ export function deriveEntries(entries: AnimeListEntry[]): DerivedAnimeEntry[] {
       status: entry.status,
       progress: entry.progress,
       format: entry.media.format ?? "UNKNOWN",
+      genres,
       studios,
       episodes: entry.media.episodes,
       releaseYear,
@@ -198,6 +200,29 @@ export function countByStudio(
     }
     for (const studio of entry.studios) {
       counts.set(studio, (counts.get(studio) ?? 0) + 1);
+    }
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => {
+      if (b[1] !== a[1]) {
+        return b[1] - a[1];
+      }
+      return a[0].localeCompare(b[0]);
+    })
+    .slice(0, limit);
+}
+
+export function countByGenre(
+  entries: DerivedAnimeEntry[],
+  options?: { limit?: number },
+): Array<[string, number]> {
+  const limit = options?.limit ?? 15;
+  const counts = new Map<string, number>();
+
+  for (const entry of entries) {
+    for (const genre of entry.genres) {
+      counts.set(genre, (counts.get(genre) ?? 0) + 1);
     }
   }
 
