@@ -34,6 +34,7 @@ import {
   countByYear,
   countByStudio,
   deriveEntries,
+  getCurrentlyAiring,
   getFormats,
   getStatuses,
   medianLag,
@@ -137,6 +138,27 @@ function sortSelectedEntries(entries: DerivedAnimeEntry[]): DerivedAnimeEntry[] 
   });
 }
 
+function formatCountdown(seconds: number | null): string {
+  if (seconds === null) {
+    return "—";
+  }
+  if (seconds <= 0) {
+    return "0m";
+  }
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const parts = [];
+  if (days > 0) {
+    parts.push(`${days}d`);
+  }
+  if (hours > 0 || days > 0) {
+    parts.push(`${hours}h`);
+  }
+  parts.push(`${minutes}m`);
+  return parts.join(" ");
+}
+
 export default function App() {
   const [draftUserName, setDraftUserName] = useState("");
   const [appliedUserName, setAppliedUserName] = useState("");
@@ -158,6 +180,14 @@ export default function App() {
   });
   const [tablePage, setTablePage] = useState(1);
   const [tablePageSize, setTablePageSize] = useState("25");
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(Date.now());
+    }, 60000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -216,6 +246,7 @@ export default function App() {
     () => countByOriginalCreator(filtered, { limit: 15 }),
     [filtered],
   );
+  const currentlyAiring = useMemo(() => getCurrentlyAiring(entries), [entries]);
 
   useEffect(() => {
     setSelection(null);
@@ -371,6 +402,79 @@ export default function App() {
             {error}
           </Alert>
         ) : null}
+
+        <Paper radius="xl" p="lg" shadow="sm" className="panel airing-panel">
+          <Stack gap={4} mb="md">
+            <Title order={2} size="h4">
+              Currently Airing
+            </Title>
+            <Text c="dimmed" size="sm">
+              Live airing view for entries with `CURRENT` status. This panel ignores the dashboard filters.
+            </Text>
+            <Text c="dimmed" size="sm">
+              Total airing entries: {currentlyAiring.length}
+            </Text>
+          </Stack>
+          {currentlyAiring.length === 0 ? (
+            <Text c="dimmed" size="sm">
+              No currently airing entries with `CURRENT` status were found on this AniList profile.
+            </Text>
+          ) : (
+            <ScrollArea h={280} offsetScrollbars scrollbarSize={10} type="auto">
+              <Table
+                striped
+                highlightOnHover
+                withTableBorder
+                withColumnBorders
+                stickyHeader
+                stickyHeaderOffset={0}
+                horizontalSpacing="md"
+                verticalSpacing="sm"
+                className="results-table"
+              >
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th>Title</Table.Th>
+                    <Table.Th>Status</Table.Th>
+                    <Table.Th>Progress</Table.Th>
+                    <Table.Th>Next ep</Table.Th>
+                    <Table.Th>Airs in</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                  {currentlyAiring.map((entry) => {
+                    const airingAt = entry.nextAiringEpisode?.airingAt ?? null;
+                    const secondsUntil =
+                      airingAt === null
+                        ? null
+                        : Math.max(0, Math.floor((airingAt * 1000 - now) / 1000));
+                    return (
+                      <Table.Tr key={`airing-${entry.mediaId}`}>
+                        <Table.Td>
+                          <a
+                            href={`https://anilist.co/anime/${entry.mediaId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="result-link"
+                          >
+                            {entry.title}
+                          </a>
+                        </Table.Td>
+                        <Table.Td>{entry.status}</Table.Td>
+                        <Table.Td>
+                          {entry.progress}
+                          {entry.episodes ? ` / ${entry.episodes}` : ""}
+                        </Table.Td>
+                        <Table.Td>{entry.nextAiringEpisode?.episode ?? "—"}</Table.Td>
+                        <Table.Td>{formatCountdown(secondsUntil)}</Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
+          )}
+        </Paper>
 
         <Paper radius="xl" p="lg" shadow="sm" className="workspace">
           <StatsGrid

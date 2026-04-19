@@ -29,6 +29,11 @@ export const ANILIST_COLLECTION_QUERY = /* GraphQL */ `
             format
             seasonYear
             genres
+            nextAiringEpisode {
+              episode
+              airingAt
+              timeUntilAiring
+            }
             staff(sort: [RELEVANCE], perPage: 12) {
               edges {
                 role

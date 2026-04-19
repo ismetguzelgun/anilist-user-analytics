@@ -11,7 +11,9 @@ The app reads public AniList data by username and turns it into interactive char
 - completion year counts
 - studio overview
 - genre overview
+- original creator overview
 - completion lag
+- currently airing countdown table
 
 ## Stack
 
@@ -32,6 +34,8 @@ The app reads public AniList data by username and turns it into interactive char
 - sortable result table
 - pagination with `25 / 50 / 100`
 - genre and studio breakdowns
+- original creator breakdown
+- currently airing panel with countdowns for valid `CURRENT` entries
 
 ## Run Locally
 

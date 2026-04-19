@@ -37,6 +37,7 @@ export function deriveEntries(entries: AnimeListEntry[]): DerivedAnimeEntry[] {
       originalCreators,
       studios,
       episodes: entry.media.episodes,
+      nextAiringEpisode: entry.media.nextAiringEpisode,
       releaseYear,
       completedYear,
       startedYear,
@@ -268,4 +269,22 @@ export function countByOriginalCreator(
       return a[0].localeCompare(b[0]);
     })
     .slice(0, limit);
+}
+
+export function getCurrentlyAiring(entries: DerivedAnimeEntry[]): DerivedAnimeEntry[] {
+  return entries
+    .filter(
+      (entry) =>
+        entry.status === "CURRENT" &&
+        entry.nextAiringEpisode !== null &&
+        entry.nextAiringEpisode.airingAt !== null &&
+        entry.nextAiringEpisode.episode !== null &&
+        entry.nextAiringEpisode.timeUntilAiring !== null &&
+        entry.nextAiringEpisode.timeUntilAiring > 0,
+    )
+    .sort(
+      (a, b) =>
+        (a.nextAiringEpisode?.airingAt ?? Number.POSITIVE_INFINITY) -
+        (b.nextAiringEpisode?.airingAt ?? Number.POSITIVE_INFINITY),
+    );
 }

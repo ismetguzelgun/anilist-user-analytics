@@ -22,6 +22,12 @@ export type StaffEdge = {
   };
 };
 
+export type NextAiringEpisode = {
+  episode: number | null;
+  airingAt: number | null;
+  timeUntilAiring: number | null;
+};
+
 export type AnimeMedia = {
   id: number;
   idMal: number | null;
@@ -29,6 +35,7 @@ export type AnimeMedia = {
   format: string | null;
   seasonYear: number | null;
   genres: string[];
+  nextAiringEpisode: NextAiringEpisode | null;
   staff: {
     edges: StaffEdge[];
   };
@@ -70,6 +77,7 @@ export type DerivedAnimeEntry = {
   originalCreators: string[];
   studios: string[];
   episodes: number | null;
+  nextAiringEpisode: NextAiringEpisode | null;
   releaseYear: number | null;
   completedYear: number | null;
   startedYear: number | null;
