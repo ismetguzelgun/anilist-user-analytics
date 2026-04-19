@@ -33,7 +33,6 @@ The app reads public AniList data by username and turns it into interactive char
 ## Run Locally
 
 ```bash
-cd anilist-user-analytics
 npm install
 npm run dev
 ```
@@ -47,12 +46,10 @@ http://localhost:5173
 ## Build
 
 ```bash
-cd anilist-user-analytics
 npm run build
 ```
 
 ## Notes
 
 - The app uses public AniList profile data, so normal read-only usage does not require a token.
-- The source app lives under [`anilist-user-analytics/`](./anilist-user-analytics).
 - This repo intentionally excludes local migration tooling and private helper files from GitHub.

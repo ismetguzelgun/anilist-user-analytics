@@ -1,13 +1,8 @@
 .DS_Store
 .venv/
 
-anilist-user-analytics/node_modules/
-anilist-user-analytics/dist/
-anilist-user-analytics/*.tsbuildinfo
-anilist-user-analytics/vite.config.js
-anilist-user-analytics/vite.config.d.ts
-
-migration/.venv/
-migration/runtime/
-migration/
-scripts.sh
+node_modules/
+dist/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
