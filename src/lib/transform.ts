@@ -8,6 +8,15 @@ function inferReleaseYear(entry: AnimeListEntry): number | null {
   return getYear(entry.media.startDate) ?? entry.media.seasonYear ?? null;
 }
 
+function extractOriginalCreators(entry: AnimeListEntry): string[] {
+  const creators = entry.media.staff.edges
+    .filter((edge) => edge.role?.toLowerCase().includes("original creator"))
+    .map((edge) => edge.node.name.full)
+    .filter((name): name is string => Boolean(name));
+
+  return [...new Set(creators)];
+}
+
 export function deriveEntries(entries: AnimeListEntry[]): DerivedAnimeEntry[] {
   return entries.map((entry) => {
     const releaseYear = inferReleaseYear(entry);
@@ -15,6 +24,7 @@ export function deriveEntries(entries: AnimeListEntry[]): DerivedAnimeEntry[] {
     const startedYear = getYear(entry.startedAt);
     const studios = entry.media.studios.nodes.map((studio) => studio.name);
     const genres = entry.media.genres ?? [];
+    const originalCreators = extractOriginalCreators(entry);
     return {
       mediaId: entry.media.id,
       malId: entry.media.idMal,
@@ -24,6 +34,7 @@ export function deriveEntries(entries: AnimeListEntry[]): DerivedAnimeEntry[] {
       progress: entry.progress,
       format: entry.media.format ?? "UNKNOWN",
       genres,
+      originalCreators,
       studios,
       episodes: entry.media.episodes,
       releaseYear,
@@ -223,6 +234,29 @@ export function countByGenre(
   for (const entry of entries) {
     for (const genre of entry.genres) {
       counts.set(genre, (counts.get(genre) ?? 0) + 1);
+    }
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => {
+      if (b[1] !== a[1]) {
+        return b[1] - a[1];
+      }
+      return a[0].localeCompare(b[0]);
+    })
+    .slice(0, limit);
+}
+
+export function countByOriginalCreator(
+  entries: DerivedAnimeEntry[],
+  options?: { limit?: number },
+): Array<[string, number]> {
+  const limit = options?.limit ?? 15;
+  const counts = new Map<string, number>();
+
+  for (const entry of entries) {
+    for (const creator of entry.originalCreators) {
+      counts.set(creator, (counts.get(creator) ?? 0) + 1);
     }
   }
 

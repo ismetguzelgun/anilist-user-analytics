@@ -21,6 +21,7 @@ import { StatsGrid } from "./components/StatsGrid";
 import { HeatmapChart } from "./components/charts/HeatmapChart";
 import { LagHistogramChart } from "./components/charts/LagHistogramChart";
 import { GenreBarChart } from "./components/charts/GenreBarChart";
+import { OriginalCreatorBarChart } from "./components/charts/OriginalCreatorBarChart";
 import { StudioBarChart } from "./components/charts/StudioBarChart";
 import { YearBarChart } from "./components/charts/YearBarChart";
 import {
@@ -29,6 +30,7 @@ import {
   buildHeatmap,
   buildLagHistogram,
   countByGenre,
+  countByOriginalCreator,
   countByYear,
   countByStudio,
   deriveEntries,
@@ -55,6 +57,7 @@ const chartOptions = [
   { key: "releaseYear", label: "By Release Year" },
   { key: "completedYear", label: "By Completion Year" },
   { key: "genre", label: "By Genre" },
+  { key: "originalCreator", label: "By Original Creator" },
   { key: "studio", label: "By Studio" },
   { key: "lag", label: "Completion Lag" },
 ] as const;
@@ -85,6 +88,13 @@ type SelectionState =
     }
   | {
       kind: "genre";
+      key: string;
+      title: string;
+      description: string;
+      entries: DerivedAnimeEntry[];
+    }
+  | {
+      kind: "originalCreator";
       key: string;
       title: string;
       description: string;
@@ -202,6 +212,10 @@ export default function App() {
     [filtered, appliedFilters.minScore],
   );
   const genreCounts = useMemo(() => countByGenre(filtered, { limit: 15 }), [filtered]);
+  const originalCreatorCounts = useMemo(
+    () => countByOriginalCreator(filtered, { limit: 15 }),
+    [filtered],
+  );
 
   useEffect(() => {
     setSelection(null);
@@ -228,6 +242,8 @@ export default function App() {
   const selectedReleaseYear = selection?.kind === "releaseYear" ? selection.key : null;
   const selectedCompletedYear = selection?.kind === "completedYear" ? selection.key : null;
   const selectedGenre = selection?.kind === "genre" ? selection.key : null;
+  const selectedOriginalCreator =
+    selection?.kind === "originalCreator" ? selection.key : null;
   const selectedStudio = selection?.kind === "studio" ? selection.key : null;
   const selectedLag = selection?.kind === "lag" ? selection.key : null;
 
@@ -503,6 +519,29 @@ export default function App() {
                     key: genre,
                     title: genre,
                     description: "Entries selected from the genre chart.",
+                    entries,
+                  });
+                }}
+              />
+            ) : null}
+
+            {activeChart === "originalCreator" ? (
+              <OriginalCreatorBarChart
+                data={originalCreatorCounts}
+                selectedCreator={selectedOriginalCreator}
+                onCreatorSelect={(creator) => {
+                  if (creator === null) {
+                    setSelection(null);
+                    return;
+                  }
+                  const entries = sortSelectedEntries(
+                    filtered.filter((entry) => entry.originalCreators.includes(creator)),
+                  );
+                  setSelection({
+                    kind: "originalCreator",
+                    key: creator,
+                    title: creator,
+                    description: "Entries selected from the original creator chart.",
                     entries,
                   });
                 }}

@@ -13,6 +13,15 @@ export type StudioNode = {
   name: string;
 };
 
+export type StaffEdge = {
+  role: string | null;
+  node: {
+    name: {
+      full: string;
+    };
+  };
+};
+
 export type AnimeMedia = {
   id: number;
   idMal: number | null;
@@ -20,6 +29,9 @@ export type AnimeMedia = {
   format: string | null;
   seasonYear: number | null;
   genres: string[];
+  staff: {
+    edges: StaffEdge[];
+  };
   studios: {
     nodes: StudioNode[];
   };
@@ -55,6 +67,7 @@ export type DerivedAnimeEntry = {
   progress: number;
   format: string;
   genres: string[];
+  originalCreators: string[];
   studios: string[];
   episodes: number | null;
   releaseYear: number | null;

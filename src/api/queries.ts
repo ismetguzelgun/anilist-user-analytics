@@ -29,6 +29,16 @@ export const ANILIST_COLLECTION_QUERY = /* GraphQL */ `
             format
             seasonYear
             genres
+            staff(sort: [RELEVANCE], perPage: 12) {
+              edges {
+                role
+                node {
+                  name {
+                    full
+                  }
+                }
+              }
+            }
             studios(isMain: true) {
               nodes {
                 name
