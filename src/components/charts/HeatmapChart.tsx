@@ -90,6 +90,39 @@ export function HeatmapChart({
         },
       },
     ],
+    media: [
+      {
+        query: {
+          maxWidth: 720,
+        },
+        option: {
+          grid: {
+            left: 48,
+            right: 12,
+            top: 28,
+            bottom: 84,
+            containLabel: true,
+          },
+          xAxis: {
+            nameGap: 42,
+            axisLabel: {
+              interval: "auto",
+              rotate: 50,
+              hideOverlap: true,
+              margin: 10,
+              fontSize: 10,
+            },
+          },
+          yAxis: {
+            nameGap: 38,
+            axisLabel: {
+              margin: 8,
+              fontSize: 10,
+            },
+          },
+        },
+      },
+    ],
   };
 
   const onEvents = {
@@ -110,7 +143,7 @@ export function HeatmapChart({
       title="Release Year vs Completed Year"
       subtitle="Where your finished anime cluster across release time and watch time. Click a cell to list matching anime."
     >
-      <ReactECharts option={option} onEvents={onEvents} style={{ height: 500 }} />
+      <ReactECharts option={option} onEvents={onEvents} style={{ height: 500, minWidth: 0 }} />
     </ChartPanel>
   );
 }

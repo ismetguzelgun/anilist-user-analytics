@@ -2,6 +2,9 @@
 
 AniList user analytics dashboard built as a client-side web app.
 
+Live URL:
+- https://anilist-user-analytics.vercel.app/
+
 The app reads public AniList data by username and turns it into interactive charts for:
 - release year vs completed year
 - release year counts
@@ -29,7 +32,7 @@ The app reads public AniList data by username and turns it into interactive char
 - sortable result table
 - pagination with `25 / 50 / 100`
 - genre and studio breakdowns
-- happy anilist experience
+
 ## Run Locally
 
 ```bash

@@ -58,6 +58,39 @@ export function LagHistogramChart({
         },
       },
     ],
+    media: [
+      {
+        query: {
+          maxWidth: 720,
+        },
+        option: {
+          grid: {
+            left: 42,
+            right: 12,
+            top: 20,
+            bottom: 72,
+            containLabel: true,
+          },
+          xAxis: {
+            nameGap: 42,
+            axisLabel: {
+              interval: "auto",
+              rotate: 40,
+              hideOverlap: true,
+              margin: 10,
+              fontSize: 10,
+            },
+          },
+          yAxis: {
+            nameGap: 34,
+            axisLabel: {
+              margin: 8,
+              fontSize: 10,
+            },
+          },
+        },
+      },
+    ],
   };
 
   const onEvents = {
@@ -75,7 +108,7 @@ export function LagHistogramChart({
       title="Completion Lag"
       subtitle="How many years usually pass between release and your completion date. Click a bar to list matching anime."
     >
-      <ReactECharts option={option} onEvents={onEvents} style={{ height: 380 }} />
+      <ReactECharts option={option} onEvents={onEvents} style={{ height: 380, minWidth: 0 }} />
     </ChartPanel>
   );
 }

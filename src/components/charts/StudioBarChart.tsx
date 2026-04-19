@@ -33,6 +33,10 @@ export function StudioBarChart({
       type: "category",
       data: data.map(([studio]) => studio),
       inverse: true,
+      axisLabel: {
+        width: 110,
+        overflow: "truncate",
+      },
     },
     series: [
       {
@@ -42,6 +46,33 @@ export function StudioBarChart({
           color: (params: { dataIndex: number }) => {
             const studio = data[params.dataIndex]?.[0];
             return studio === selectedStudio ? "#ef476f" : "#118ab2";
+          },
+        },
+      },
+    ],
+    media: [
+      {
+        query: {
+          maxWidth: 720,
+        },
+        option: {
+          grid: {
+            left: 100,
+            right: 12,
+            top: 16,
+            bottom: 20,
+          },
+          yAxis: {
+            axisLabel: {
+              width: 84,
+              overflow: "truncate",
+              fontSize: 10,
+            },
+          },
+          xAxis: {
+            axisLabel: {
+              fontSize: 10,
+            },
           },
         },
       },
@@ -63,7 +94,7 @@ export function StudioBarChart({
       title="Scores by Studio"
       subtitle="Top studios by number of anime in the current filter. Click a bar to list its titles."
     >
-      <ReactECharts option={option} onEvents={onEvents} style={{ height: 420 }} />
+      <ReactECharts option={option} onEvents={onEvents} style={{ height: 420, minWidth: 0 }} />
     </ChartPanel>
   );
 }

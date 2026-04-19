@@ -33,6 +33,10 @@ export function GenreBarChart({
       type: "category",
       data: data.map(([genre]) => genre),
       inverse: true,
+      axisLabel: {
+        width: 110,
+        overflow: "truncate",
+      },
     },
     series: [
       {
@@ -42,6 +46,33 @@ export function GenreBarChart({
           color: (params: { dataIndex: number }) => {
             const genre = data[params.dataIndex]?.[0];
             return genre === selectedGenre ? "#ef476f" : "#2a6fdb";
+          },
+        },
+      },
+    ],
+    media: [
+      {
+        query: {
+          maxWidth: 720,
+        },
+        option: {
+          grid: {
+            left: 100,
+            right: 12,
+            top: 16,
+            bottom: 20,
+          },
+          yAxis: {
+            axisLabel: {
+              width: 84,
+              overflow: "truncate",
+              fontSize: 10,
+            },
+          },
+          xAxis: {
+            axisLabel: {
+              fontSize: 10,
+            },
           },
         },
       },
@@ -63,7 +94,7 @@ export function GenreBarChart({
       title="By Genre"
       subtitle="Top genres in the current filter. Click a bar to list matching anime."
     >
-      <ReactECharts option={option} onEvents={onEvents} style={{ height: 420 }} />
+      <ReactECharts option={option} onEvents={onEvents} style={{ height: 420, minWidth: 0 }} />
     </ChartPanel>
   );
 }

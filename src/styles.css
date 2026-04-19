@@ -124,11 +124,13 @@ button {
 
 .chart-switcher-wrap {
   align-items: center;
+  max-width: 100%;
 }
 
 .chart-switcher-wrap .mantine-SegmentedControl-root {
   background: #dde4ec;
   border: 1px solid #bcc7d4;
+  max-width: 100%;
 }
 
 .chart-switcher-wrap .mantine-SegmentedControl-indicator {
@@ -203,5 +205,78 @@ button {
   .anilist-logo {
     width: 44px;
     height: 44px;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 12px 10px 24px;
+  }
+
+  .header-strip,
+  .panel,
+  .workspace,
+  .chart-stage,
+  .results-panel {
+    padding: 14px !important;
+  }
+
+  .header-strip > .mantine-Group-root {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .brand-block {
+    width: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .header-copy {
+    max-width: none;
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .filters-header {
+    margin-bottom: 10px !important;
+  }
+
+  .refresh-button {
+    width: 100%;
+  }
+
+  .chart-stage > .mantine-Group-root:first-child {
+    align-items: flex-start;
+  }
+
+  .chart-switcher-wrap {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+
+  .chart-switcher-wrap .mantine-SegmentedControl-root {
+    min-width: max-content;
+    flex: 0 0 auto;
+  }
+
+  .chart-switcher-wrap .mantine-SegmentedControl-label {
+    font-size: 0.78rem;
+    padding-inline: 10px;
+  }
+
+  .results-panel .mantine-Group-root {
+    align-items: stretch;
+  }
+
+  .results-panel .mantine-TextInput-root {
+    width: 100% !important;
+  }
+
+  .table-footer-rows {
+    width: 100%;
+    justify-content: flex-end;
   }
 }
