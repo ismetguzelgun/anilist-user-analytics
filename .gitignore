@@ -1,8 +1,13 @@
 .DS_Store
 .venv/
 
-anime-heatmap/node_modules/
-anime-heatmap/dist/
+anilist-user-analytics/node_modules/
+anilist-user-analytics/dist/
+anilist-user-analytics/*.tsbuildinfo
+anilist-user-analytics/vite.config.js
+anilist-user-analytics/vite.config.d.ts
 
 migration/.venv/
 migration/runtime/
+migration/
+scripts.sh
